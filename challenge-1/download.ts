@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import axios from 'axios';
+import axios, { AxiosHeaderValue } from 'axios';
 import ProgressBar from 'progress';
 
 /**
@@ -20,7 +20,7 @@ export const downloadFile = async (url: string, destination: string): Promise<vo
 
   const response = await axios.get(url, { responseType: 'stream' });
 
-  const totalLength = response.headers['content-length'];
+  const totalLength: string = response.headers['content-length'];
   const progressBar = new ProgressBar('-> Downloading [:bar] :percent :etas', {
     width: 40,
     complete: '=',
