@@ -3,7 +3,8 @@
  * with the challenge.
  */
 
-import { sleep } from "crawlee";
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * A mock function to "check" if the given domain is available for purchase.
@@ -23,3 +24,41 @@ export async function isDomainAvailable(domain: string): Promise<boolean> {
   await sleep(1000);
   return domain.toLowerCase().charCodeAt(0) % 2 === 0;
 }
+
+/**
+ * Interface representing a Domain.
+ */
+export interface Domain {
+  /**
+   * The name of the domain.
+   */
+  name: string;
+
+  /**
+   * Indicates the availability of the domain.
+   * Can be true, false, or null if not checked.
+   */
+  isAvailable: boolean | null;
+}
+
+import { useToast } from "@chakra-ui/react";
+
+/**
+ * Function to display a toast notification.
+ *
+ * @param toast - The toast function returned by useToast.
+ * @param title - The title to be displayed in the toast notification.
+ * @param status - The status type of the toast. Can be "success", "info", "warning", or "error".
+ */
+export const showToast = (
+  toast: ReturnType<typeof useToast>,
+  title: string,
+  status: "success" | "info" | "warning" | "error"
+) => {
+  toast({
+    title,
+    status,
+    duration: 3000, // Set the duration for the toast (3 seconds)
+    isClosable: true, // Make the toast closable by the user
+  });
+};

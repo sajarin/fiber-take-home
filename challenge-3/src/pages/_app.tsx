@@ -3,10 +3,11 @@ import { AppProps } from "next/app";
 
 // Tailwind and other styles
 import "@/styles/globals.css";
+import theme from "@/styles/theme";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <Component {...pageProps} />
     </ChakraProvider>
   );

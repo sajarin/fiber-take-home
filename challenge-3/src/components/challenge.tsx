@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import DomainChallenge from "./DomainChallenge";
 
 export interface ChallengeProps {
   /**
@@ -9,11 +9,13 @@ export interface ChallengeProps {
 }
 
 export function Challenge(props: ChallengeProps) {
-  const { maxDomains } = props;
+  const maxDomains = props.maxDomains;
+  const numDomainsRequired = 5; // Hardcoded for now
 
   return (
-    <>
-      <Box>Your code here</Box>
-    </>
+    <DomainChallenge
+      maxDomains={maxDomains}
+      numDomainsRequired={numDomainsRequired}
+    />
   );
 }
