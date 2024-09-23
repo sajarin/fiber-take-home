@@ -1,8 +1,11 @@
-import { downloadFile} from './download';
-import { decompressAndExtract } from './extract';
-import { setupDatabase } from './db';
-import { processCSV } from './csvProcessor';
-import { DUMP_DOWNLOAD_URL, SQLITE_DB_PATH, DUMP_LOCAL_PATH, EXTRACT_PATH} from './resources';
+import * as fs from "fs-extra";
+import { decompressAndExtract } from "./src/extract";
+import { downloadFile } from "./src/download";
+import { getDBInstance } from "./src/db";
+import { parseCSV } from "./src/parse";
+import { DUMP_DOWNLOAD_URL } from "./resources";
+import { exit } from "process";
+import { completeAllTasks } from "./src/progress";
 
 /**
  * The entry point function. This will download the given dump file, extract/decompress it,
@@ -11,20 +14,46 @@ import { DUMP_DOWNLOAD_URL, SQLITE_DB_PATH, DUMP_LOCAL_PATH, EXTRACT_PATH} from 
  * functions!
  */
 const processDataDump = async (): Promise<void> => {
-  console.log("processing data dump...")
-  const tarFileUrl = DUMP_DOWNLOAD_URL;
-  const downloadPath = DUMP_LOCAL_PATH;
-  const extractPath = EXTRACT_PATH;
-  const dbPath = SQLITE_DB_PATH
+  const downloadPath = "tmp/dump.tar.gz";
+  const extractPath = "tmp/";
+  const dbPath = "out/database.sqlite";
 
-  await downloadFile(tarFileUrl, downloadPath);
-  await decompressAndExtract(downloadPath, extractPath);
+  try {
+    console.log("Starting download...");
+    await downloadFile(DUMP_DOWNLOAD_URL, downloadPath); // Await download completion
+    console.log("File downloaded successfully.");
 
-  const db = await setupDatabase(dbPath);
+    console.log("Starting extraction...");
+    await decompressAndExtract(downloadPath, extractPath); // Await extraction completion
+    console.log("File decompressed and extracted successfully.");
 
-  await processCSV(`${extractPath}/customers.csv`, db, 'customers');
-  await processCSV(`${extractPath}/organizations.csv`, db, 'organizations');
+    console.log("Ensuring output directory exists...");
+    await fs.ensureDir("out"); // Ensure the output directory exists
+    console.log("Output directory is ready.");
+
+    const db = await getDBInstance(dbPath); // Await database initialization
+    console.log("Database initialized successfully.");
+
+    console.log("Parsing CSV files...");
+    await Promise.all([
+      parseCSV(`${extractPath}/dump/customers.csv`, db, "customers"),
+      parseCSV(`${extractPath}/dump/organizations.csv`, db, "organizations"),
+    ]); // Await parsing completion
+    await parseCSV(`${extractPath}/dump/customers.csv`, db, "customers"),
+      await parseCSV(
+        `${extractPath}/dump/organizations.csv`,
+        db,
+        "organizations"
+      );
+    console.log("CSV files parsed successfully.");
+  } catch (error) {
+    console.error("An error occurred:", error);
+  }
+
   console.log("✅ Done!");
+  // close progress bar
+  completeAllTasks();
+  exit(0);
 };
 
 export default processDataDump;
