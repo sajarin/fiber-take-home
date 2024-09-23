@@ -1,4 +1,4 @@
-export interface CompanyData {
+export interface Record {
   company?: Company;
   jobPostings?: Job[];
   jobsUrl?: string;
@@ -11,14 +11,12 @@ export interface CompanyData {
 export interface Company {
   id: number;
   name: string;
-  logo?: string;
-  batch?: string;
-  logoUrl?: string;
+  smallLogoUrl?: string;
+  batchName?: string;
   oneLiner?: string;
   website?: string;
   longDescription?: string;
   tags?: string[];
-  isActive?: boolean;
   yearFounded?: number;
   teamSize?: number;
   location?: string;
@@ -27,9 +25,9 @@ export interface Company {
   country?: string;
   linkedinUrl?: string;
   twitterUrl?: string;
-  facebookUrl?: string;
-  crunchbaseUrl?: string;
-  gitubUrl?: string;
+  fbUrl?: string;
+  cbUrl?: string;
+  githubUrl?: string;
   ycdcStatus?: string;
   freeResponseQuestionAnswers?: FreeResponseQuestionAnswer[];
   ddayVideoUrl?: string | null;
@@ -56,7 +54,7 @@ export interface GroupPartner {
 
 export interface Founder {
   userId?: number;
-  isActive?: boolean;
+  isActive?: string;
   founderBio?: string;
   fullName?: string;
   title?: string;
@@ -64,10 +62,10 @@ export interface Founder {
   twitterUrl?: string;
   linkedinUrl?: string;
   hasEmail?: boolean;
-  latestYCCompany?: LatestYCCompany;
+  latestYcCompany?: LatestYcCompany;
 }
 
-export interface LatestYCCompany {
+export interface LatestYcCompany {
   name?: string;
   href?: string;
 }

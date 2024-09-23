@@ -1,7 +1,8 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { parseCSV } from "./src/parser";
 import { scrapeCompany } from "./src/scraper";
-import { JSON_OUTPUT_PATH } from "./resources";
+import { Record } from "./src/schemas";
+import { JSON_OUTPUT_PATH, CSV_INPUT_PATH } from "./resources";
 import chalk from "chalk";
 
 /**
@@ -9,15 +10,25 @@ import chalk from "chalk";
  * YC pages, and output structured data in a JSON file.
  */
 export async function processCompanyList() {
-  const companyList = await parseCSV();
+  const companyList = await parseCSV(CSV_INPUT_PATH);
 
-  // For testing purposes, only scrape the first company and output its contents
-  const result = await scrapeCompany(companyList[0]);
+  // Ensure the output directory exists.
+  await fs.ensureDir("out/");
 
-  console.log(chalk.rgb(222, 173, 237)("Scraped data for the first company:"));
-  console.log(result);
-  // await fs.outputJSON(JSON_OUTPUT_PATH, result);
+  // Initialize an array to store all scraped data.
+  const scrapedData: Record[] = [];
 
-  // const result = await Promise.all(companyList.map(scrapeCompany));
-  // await fs.outputJson(JSON_OUTPUT_PATH, result, { spaces: 2 });
+  // Scrape each company sequentially and store the result.
+  for (const company of companyList) {
+    try {
+      const data = await scrapeCompany(company);
+      console.log(`Scraped data for ${company}:`, data);
+      scrapedData.push(data);
+    } catch (error) {
+      console.error(`Error scraping company ${company}:`, error);
+    }
+  }
+
+  await fs.writeJson(JSON_OUTPUT_PATH, scrapedData, { spaces: 2 });
+  console.log(chalk.green("Data has been written to:"), JSON_OUTPUT_PATH);
 }

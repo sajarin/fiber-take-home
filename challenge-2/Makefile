@@ -2,6 +2,7 @@
 
 # Define directories
 OUT_DIR = out
+CHEERIO_STORAGE_DIR = storage
 
 # Default target
 default: run
@@ -16,4 +17,4 @@ run: install
 
 # Clean up generated directories
 clean:
-	rm -rf $(TMP_DIR) $(OUT_DIR)
+	rm -rf $(CHEERIO_STORAGE_DIR) $(OUT_DIR)

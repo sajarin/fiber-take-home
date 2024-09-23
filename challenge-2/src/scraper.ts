@@ -1,144 +1,219 @@
-import { CheerioCrawler, CheerioCrawlingContext, CheerioCrawlerOptions } from 'crawlee';
-import * as cheerio from 'cheerio';
-import { CompanyData, LaunchPost, Job, Founder, NewsItem } from './schemas';
+import {
+  CheerioCrawler,
+  CheerioCrawlingContext,
+  CheerioCrawlerOptions,
+} from "crawlee";
+import * as cheerio from "cheerio";
+import camelcaseKeys from "camelcase-keys";
+import { Record, Company, Job, Founder, NewsItem, Launch } from "./schemas";
 
 // Utility type to add Optional if needed
-type PartialCompanyData = Partial<CompanyData>;
+type PartialRecord = Partial<Record>;
+type PartialCompany = Partial<Company>;
+type PartialJob = Partial<Job>;
+type PartialFounder = Partial<Founder>;
+type PartialLaunch = Partial<Launch>;
+type PartialNewsItem = Partial<NewsItem>;
 
-// Helper function to extract job postings
-const extractJobPostings = (data: any[]): Job[] => data.map((job: any) => ({
-    id: job.id,
-    title: job.title,
+/**
+ * Extracts company data from a partial company object.
+ * @param data - Partial company data.
+ * @returns Fully constructed Company object.
+ */
+const extractCompany = (data: PartialCompany): Company => ({
+  id: data.id!,
+  name: data.name!,
+  smallLogoUrl: data.smallLogoUrl,
+  batchName: data.batchName,
+  oneLiner: data.oneLiner,
+  website: data.website,
+  longDescription: data.longDescription,
+  tags: data.tags,
+  yearFounded: data.yearFounded,
+  teamSize: data.teamSize,
+  location: data.location,
+  city: data.city,
+  cityTag: data.cityTag,
+  country: data.country,
+  linkedinUrl: data.linkedinUrl,
+  twitterUrl: data.twitterUrl,
+  fbUrl: data.fbUrl,
+  cbUrl: data.cbUrl,
+  githubUrl: data.githubUrl,
+  ycdcStatus: data.ycdcStatus,
+  freeResponseQuestionAnswers: data.freeResponseQuestionAnswers,
+  ddayVideoUrl: data.ddayVideoUrl,
+  ddayPresenterId: data.ddayPresenterId,
+  appVideoUrl: data.appVideoUrl,
+  appAnswers: data.appAnswers,
+  ycdcCompanyUrl: data.ycdcCompanyUrl,
+  primaryGroupPartner: data.primaryGroupPartner,
+  companyPhotos: data.companyPhotos,
+});
+
+/**
+ * Extracts job postings from an array of partial job objects.
+ * @param data - Array of partial job objects.
+ * @returns Fully constructed array of Job objects.
+ */
+const extractJobPostings = (data: PartialJob[]): Job[] =>
+  data.map((job) => ({
+    id: job.id!,
+    title: job.title!,
     url: job.url,
-    applyUrl: job.apply_url,
+    applyUrl: job.applyUrl,
     location: job.location,
-    askUs: job.ask_us,
+    askUs: job.askUs,
     type: job.type,
     role: job.role,
-    roleSpecificType: job.role_specific_type,
-    salaryRange: job.salary_range,
-    equityRange: job.equity_range,
-    minExperience: job.min_experience,
-    minSchoolYear: job.min_school_year,
-    isIncomplete: job.is_incomplete,
-    companyUrl: job.company_url,
-    companyLogoUrl: job.company_logo_url,
-    companyName: job.company_name,
-    companyBatchName: job.company_batch_name,
-    companyOneLiner: job.company_one_liner,
-    createdAt: job.created_at,
-    lastActive: job.last_active,
-    hiringManager: job.hiring_manager
-})) as Job[];
+    roleSpecificType: job.roleSpecificType,
+    salaryRange: job.salaryRange,
+    equityRange: job.equityRange,
+    minExperience: job.minExperience,
+    minSchoolYear: job.minSchoolYear,
+    isIncomplete: job.isIncomplete!,
+    companyUrl: job.companyUrl,
+    companyLogoUrl: job.companyLogoUrl,
+    companyName: job.companyName,
+    companyBatchName: job.companyBatchName,
+    companyOneLiner: job.companyOneLiner,
+    createdAt: job.createdAt,
+    lastActive: job.lastActive,
+    hiringManager: job.hiringManager,
+  })) as Job[];
 
-// Helper function to extract founders
-const extractFounders = (data: any[]): Founder[] => data.map((founder: any) => ({
-    name: founder.name,
-    linkedIn: founder.linkedIn,
-    avatar: founder.avatar
-})) as Founder[];
+/**
+ * Extracts founder data from an array of partial founder objects.
+ * @param data - Array of partial founder objects.
+ * @returns Fully constructed array of Founder objects.
+ */
+const extractFounders = (data: PartialFounder[]): Founder[] =>
+  data.map((founder) => ({
+    userId: founder.userId,
+    isActive: founder.isActive,
+    founderBio: founder.founderBio,
+    fullName: founder.fullName,
+    title: founder.title,
+    avatarThumbUrl: founder.avatarThumbUrl,
+    twitterUrl: founder.twitterUrl,
+    linkedinUrl: founder.linkedinUrl,
+    hasEmail: founder.hasEmail,
+    latestYCCompany: founder.latestYcCompany,
+  })) as Founder[];
 
-// Helper function to extract launch posts
-const extractLaunchPosts = (data: any[]): LaunchPost[] => data.map((launch: any) => ({
-    id: launch.id,
-    title: launch.title,
+/**
+ * Extracts launch posts from an array of partial launch objects.
+ * @param data - Array of partial launch objects.
+ * @returns Fully constructed array of Launch objects.
+ */
+const extractLaunchPosts = (data: PartialLaunch[]): Launch[] =>
+  data.map((launch) => ({
+    id: launch.id!,
+    title: launch.title!,
     body: launch.body,
-    bodyMd: launch.body_md,
     tagline: launch.tagline,
-    createdAt: launch.created_at,
+    createdAt: launch.createdAt!,
     company: {
-        id: launch.company.id,
-        name: launch.company.name,
-        logo: launch.company.logo,
-        batch: launch.company.batch,
-        tags: launch.company.tags,
-        url: launch.company.url,
-        slug: launch.company.slug,
-        description: launch.company.description
+      id: launch.company!.id!,
+      name: launch.company!.name!,
+      logo: launch.company!.logo,
+      batch: launch.company!.batch,
+      tags: launch.company!.tags,
+      url: launch.company!.url,
+      slug: launch.company!.slug,
+      description: launch.company!.description,
     },
     user: {
-        name: launch.user.name,
-        avatar: launch.user.avatar
+      name: launch.user!.name!,
+      avatar: launch.user!.avatar!,
     },
-    totalVoteCount: launch.total_vote_count,
+    totalVoteCount: launch.totalVoteCount,
     slug: launch.slug,
-    launchEmbedUrl: launch.launch_embed_url,
-    twitterShareUrl: launch.twitter_share_url
-})) as LaunchPost[];
+    launchEmbedUrl: launch.launchEmbedUrl,
+    twitterShareUrl: launch.twitterShareUrl,
+  })) as Launch[];
 
-// Helper function to extract news items
-const extractNewsItems = (data: any[]): NewsItem[] => data.map((news: any) => ({
+/**
+ * Extracts news items from an array of partial news item objects.
+ * @param data - Array of partial news item objects.
+ * @returns Fully constructed array of NewsItem objects.
+ */
+const extractNewsItems = (data: PartialNewsItem[]): NewsItem[] =>
+  data.map((news) => ({
     title: news.title,
     url: news.url,
-    date: news.date
-})) as NewsItem[];
+    date: news.date,
+  })) as NewsItem[];
 
 /**
  * Extract the company data using Cheerio.
- * @param $ - The CheerioAPI instance
- * @returns - An object containing extracted company data
+ * @param $ - The CheerioAPI instance.
+ * @returns An object containing extracted company data.
  */
-const extractCompanyData = ($: cheerio.CheerioAPI): PartialCompanyData => {
-    const rawData = $('div[data-page]');  // Select the div with the data-page attribute
-    const attribs = rawData.attr();  // Get the attributes of the selected element
+const extractRecord = ($: cheerio.CheerioAPI): PartialRecord => {
+  const rawData = $("div[data-page]");
+  const attribs = rawData.attr();
 
-    // If attribs is undefined, return an empty object
-    if (!attribs || !attribs['data-page']) {
-        console.error('Data-page attribute is missing or undefined.');
-        return {}; 
-    }
+  if (!attribs || !attribs["data-page"]) {
+    console.error("Data-page attribute is missing or undefined.");
+    return {};
+  }
 
-    // Print the attribs object for manual inspection
-    console.log('Attributes:', attribs);
+  const dataPage = attribs["data-page"];
+  const dataPageObj = JSON.parse(dataPage);
 
-    const dataPage = attribs['data-page'];  // Get the value of the data-page attribute
-    const dataPageObj = JSON.parse(dataPage);  // Parse the JSON string into an object if dataPage is defined
+  if (!dataPageObj || !dataPageObj.props || !dataPageObj.props.company) {
+    return {};
+  }
 
-    if (!dataPageObj || !dataPageObj.props || !dataPageObj.props.company) {
-        return {};  // Return empty object if dataPageObj or required properties are missing
-    }
+  const companyInfo = camelcaseKeys(dataPageObj.props.company);
+  const jobs = extractJobPostings(dataPageObj.props.jobPostings || []);
+  const jobUrl = dataPageObj.props.jobsUrl || "";
+  const launchPosts = extractLaunchPosts(
+    camelcaseKeys(dataPageObj.props.launches) || []
+  );
+  const newsItems = extractNewsItems(dataPageObj.props.newsItems || []);
+  const newsUrl = dataPageObj.props.newsUrl || "";
+  const founders = extractFounders(
+    camelcaseKeys(dataPageObj.props.company.founders) || []
+  );
 
-    const companyInfo = dataPageObj.props.company;
+  const record = {
+    company: extractCompany(companyInfo),
+    jobPostings: jobs,
+    jobsUrl: jobUrl,
+    newsItems: newsItems,
+    newsUrl: newsUrl,
+    founders: founders,
+    launches: launchPosts,
+  };
+  console.log("Record:");
 
-    return {
-        name: companyInfo.name,
-        founded: companyInfo.year_founded ? companyInfo.year_founded.toString() : undefined,
-        teamSize: companyInfo.team_size,
-        jobs: extractJobPostings(dataPageObj.props.jobPostings),
-        founders: extractFounders(companyInfo.founders),
-        launchPosts: extractLaunchPosts(dataPageObj.props.launches),
-        jobPostings: extractJobPostings(dataPageObj.props.jobPostings),
-        newsItems: extractNewsItems(dataPageObj.props.newsItems),
-        jobsUrl: dataPageObj.props.jobsUrl,
-        newsUrl: dataPageObj.props.newsUrl,
-        launches: extractLaunchPosts(dataPageObj.props.launches),
-    };
+  return record;
 };
 
 /**
  * Scrape the company page and extract data.
- * @param company - An object containing company name and URL
- * @returns - A Promise resolving to a CompanyData object
+ * @param company - An object containing company name and URL.
+ * @returns A Promise resolving to a Record object.
  */
-export const scrapeCompany = async (company: { name: string; url: string }): Promise<CompanyData> => {
-    const extractedData: PartialCompanyData = {};
+export const scrapeCompany = async (company: {
+  name: string;
+  url: string;
+}): Promise<Record> => {
+  const extractedData: PartialRecord = {};
 
-    const crawlerOptions: CheerioCrawlerOptions = {
-        async requestHandler(ctx: CheerioCrawlingContext) {
-            const { $ } = ctx;
+  const crawlerOptions: CheerioCrawlerOptions = {
+    async requestHandler(ctx: CheerioCrawlingContext) {
+      const { $ } = ctx;
+      Object.assign(extractedData, extractRecord($));
+    },
+    failedRequestHandler: async ({ request }) => {
+      console.error(`Request for ${request.url} failed.`);
+    },
+  };
 
-            // Print out the HTML content for debugging
-            // console.log(`HTML content for ${company.name}:`, $.html());
-
-            Object.assign(extractedData, extractCompanyData($));
-        },
-        // Handle failed or dropped requests
-        failedRequestHandler: async ({ request }) => {
-            console.error(`Request for ${request.url} failed.`);
-        },
-    };
-
-    const crawler = new CheerioCrawler(crawlerOptions);
-    await crawler.run([company.url]);
-    return extractedData as CompanyData;
+  const crawler = new CheerioCrawler(crawlerOptions);
+  await crawler.run([company.url]);
+  return extractedData as Record;
 };
